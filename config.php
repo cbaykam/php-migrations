@@ -6,6 +6,6 @@
 		var $host = 'localhost';
 		var	$user = 'root'; 
 		var	$pass = 'deneme';
-		var	$db   = 'migrateion-test';
+		var	$db   = 'migration-test';
 	}
 ?>

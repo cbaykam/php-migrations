@@ -87,6 +87,12 @@
 		* @return {bool}
 		*/ 
 		public function install(){
+			$exists = $this->connection->query('SELECT 1 FROM schema_migrations');
+
+			if($exists){
+				die("\nMigrations plugin is already installed\n");
+			}
+
 			$var = $this->connection->query($this->create_table("schema_migrations",
 				array(
 					array('id', 'integer', 'NOT NULL'), 
