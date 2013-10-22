@@ -42,8 +42,23 @@
 		* @return {bool}
  		*/ 
 		public function generate($name){
-			$name = time() . "_" . $name ;
+			$file_path = "versions/" . time() . "_" . $name . ".php" ;
+			$migrate = fopen($file_path , 'w') or die("Cannot generate the migration check file permissions.");
 
+// @TODO fix this.
+$content = "<?php 
+	include('../Migrations.php');
+	class " . $name . " extends Migrations{
+		public function change(){
+
+		}
+	}
+?>
+";
+	 
+	 		file_put_contents($file_path, $content);
+
+			print $content; 
 		}
 
 		/*
@@ -103,10 +118,12 @@
 
 		/*
 		* Runs the migrations in their order.
+		* @param {until} -> the id of the migraion you want run until. 
 		* @return {bool} 
 		*/
-		public function run(){
-
+		public function run($until = Null){
+			$migrations = $this->connection->query("SELECT `version` FROM schema_migrations");
+			// loop through migrations to see if they ran. 
 		}
 
 		/*

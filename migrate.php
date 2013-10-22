@@ -9,6 +9,10 @@
 			$migrate->install();
 		break;
 		
+		case 'generate':
+			$migrate->generate($argv[2]);
+		break;
+
 		default:
 			
 		break;
