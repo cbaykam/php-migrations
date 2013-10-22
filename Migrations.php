@@ -57,8 +57,6 @@ $content = "<?php
 ";
 	 
 	 		file_put_contents($file_path, $content);
-
-			print $content; 
 		}
 
 		/*
@@ -122,7 +120,11 @@ $content = "<?php
 		* @return {bool} 
 		*/
 		public function run($until = Null){
-			$migrations = $this->connection->query("SELECT `version` FROM schema_migrations");
+			$this->check_installation();
+			
+			foreach(glob('./versions/*.*') as $filename){
+			    echo $filename . "\n";
+			}
 			// loop through migrations to see if they ran. 
 		}
 
@@ -132,6 +134,7 @@ $content = "<?php
 		* @return {string}
 		*/
 		public function dataType($type){
+			// @TODO improve data types
 			switch ($type) {
 				case 'string':
 					return 'VARCHAR(255)';	
@@ -144,6 +147,14 @@ $content = "<?php
 				default:
 					return false; 
 				break;
+			}
+		}
+
+		public function check_installation(){
+			$exists = $this->connection->query('SELECT 1 FROM schema_migrations');
+
+			if(!$exists){
+				die("\nMigrations plugin is not installed properly.\n");
 			}
 		}
 	}	
