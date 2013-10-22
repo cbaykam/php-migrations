@@ -15,9 +15,15 @@
 			$this->db_user = $conf->user;
 			$this->db_password = $conf->pass;
 			$this->db_database = $conf->db;
-			$this->connection = $this->connect($this->db_host, $this->db_user, $this->db_password, $this->db_database);
-		}
+				
+			$this->connection  = $this->connect($this->db_host, $this->db_user, $this->db_password, $this->db_database);
+		
+			if($this->connection->connect_error){
+				die("\nThere was a problem connecting to your database \n");	
+			}		
 
+		}
+		
 		/*
 		* Connects to the db
 		* @param {string} $host 
@@ -27,7 +33,7 @@
 		* @return {connection}
 		*/
 		public function connect($host, $user, $pass, $db){
-			return $mysqli = new mysqli($host, $user, $pass, $db);
+			return $mysqli = new mysqli($host, $user, $pass, $db);	
 		}
 
 		/*
@@ -81,7 +87,7 @@
 		* @return {bool}
 		*/ 
 		public function install(){
-			$this->connection->query($this->create_table("schema_migrations",
+			$var = $this->connection->query($this->create_table("schema_migrations",
 				array(
 					array('id', 'integer', 'NOT NULL'), 
 					array('version', 'string', 'NULL')
