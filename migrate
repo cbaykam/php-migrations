@@ -1,0 +1,2 @@
+exec php -q "$migrate = new Migrations(); "
+exit; 
