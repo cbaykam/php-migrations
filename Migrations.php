@@ -79,7 +79,7 @@ $content = "<?php
 				}		
 			}		
 			$qr = $qr . ");";
-			return $qr;
+			return $this->connection->query($qr);
 		}
 
 		/*
@@ -105,12 +105,12 @@ $content = "<?php
 				die("\nMigrations plugin is already installed\n");
 			}
 
-			$var = $this->connection->query($this->create_table("schema_migrations",
+			$var = $this->create_table("schema_migrations",
 				array(
 					array('id', 'integer', 'NOT NULL'), 
 					array('version', 'string', 'NULL')
 				)
-			));
+			);
 
 			if(!file_exists('./versions')){
 				mkdir('./versions', 0777, true);
@@ -128,7 +128,8 @@ $content = "<?php
 			foreach(glob('./versions/*.*') as $filename){
 			    require_once($filename);
 			    $klass = $this->get_class_name($filename); 
-			    echo $klass . "\n"; 
+			    $migration = new $klass;
+			    $migration->change(); 
 			} 
 		}
 
