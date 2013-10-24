@@ -80,8 +80,8 @@ $content = "<?php
 				}		
 			}		
 			$qr = $qr . ");";
-			$q = $this->connection->query($qr);
-			if(!$q){
+			$q = $this->connection->query($qr); 
+			if($q){
 				$this->output .= "There was a problem creating the table";
 			}
 			// check if there is a mysql error 
@@ -91,11 +91,11 @@ $content = "<?php
 		* Adds a field to the given table 
 		* @param {string} => the name of the table 
 		* @param {string} => the name of the field 
-		* @param {string} => the type of the field
+		* @param {mixed} => options for the field
 		* @param {array} => the options required for that field
 		* @return {bool}
 		*/
-		public function add_field($table, $field, $type, $options){
+		public function add_field($table, $field, $options){
 
 		}
 
@@ -139,7 +139,7 @@ $content = "<?php
 
 		/*
 		* The datatype returns the datatype from the given string. 
-		* @param {string} -> $type
+		* @param {mixed} -> $type
 		* @return {string}
 		*/
 		public function dataType($options){
