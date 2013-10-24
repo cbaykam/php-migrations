@@ -38,13 +38,14 @@
 
 		/*
 		* generates a migration with the given name
-		* @param {string} $name
+		* @param {string} $name -> the name of the migration with underscores. 
 		* @return {bool}
  		*/ 
 		public function generate($name){
-			$file_path = "versions/" . time() . "_" . $name . ".php" ;
+			$name = time() . $name; 
+			$file_path = "versions/" . $name . ".php" ;
 			$migrate = fopen($file_path , 'w') or die("Cannot generate the migration check file permissions.");
-
+			$name = preg_replace('/(?:^|_)(.?)/e',"strtoupper('$1')",$name); 
 // @TODO fix this.
 $content = "<?php 
 	include('../Migrations.php');
