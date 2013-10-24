@@ -1,5 +1,8 @@
-Php 5.x standalone migrations plugin : 
+Php Standalone Migrations Plugin v0.0.1 
 ================================
+
+This plugin enables to migrate your db tables as in Ruby on Rails. 
+
 
 Installation : 
 -------------------------
