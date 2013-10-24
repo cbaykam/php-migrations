@@ -219,7 +219,7 @@ $content = "<?php
 				break;
 
 				default:
-					return false; 
+					return $options; 
 				break;
 			}
 		}
