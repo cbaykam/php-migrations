@@ -64,8 +64,8 @@ $content = "<?php
 		* Creates table with the given credentials.
 		* fields structure
 		* array( 
-		* 	array('name', 'options'), 
-		*   array('name', 'options')
+		* 	array('name', array('type' => 'string')), 
+		*   array('name', 'string')
 		* )
 		* @param {string} $name -> the name of the table 
 		* @param {array} $fields -> the list of fields to build the table
@@ -73,6 +73,7 @@ $content = "<?php
 		*/ 
 		public function create_table($name, $fields){
 			$qr = "CREATE TABLE IF NOT EXISTS " . $name . " (";
+			// @TODO add more options for the key 
 			$qr .= "`id` int(11) NOT NULL AUTO_INCREMENT, PRIMARY KEY (`id`), ";	
 			$last_el = end($fields);
 			foreach ($fields as $f) {
@@ -97,10 +98,34 @@ $content = "<?php
 		* @param {string} => the name of the field 
 		* @param {mixed} => options for the field
 		* @param {array} => the options required for that field
-		* @return {bool}
+		* @return VOID
 		*/
 		public function add_field($table, $field, $options){
+			$qr = "ALTER TABLE `$table` ADD $field " . $this->datatype($options);
+			$q = $this->connection->query($qr);
 
+			if($q){	
+				$this->output .= "Added field $field to table $table. \n";
+			}else{
+				$this->output .= "There was a problem adding field: $field .\n";
+			}
+		}
+
+		/*
+		* Remove a field from table  
+		* @param {string} -> the name of the table 
+		* @param {string} -> the name of the field
+		* @return VOID 
+		*/
+		public function remove_field($table, $field){
+			$qr = "ALTER TABLE `$table` DROP $field"; 
+			$q = $this->connection->query($qr);
+
+			if($q){	
+				$this->output .= "Removed field $field to table $table. \n";
+			}else{
+				$this->output .= "There was a problem removing field: $field .\n";
+			}
 		}
 
 		/*
