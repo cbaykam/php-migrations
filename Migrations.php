@@ -130,19 +130,24 @@ $content = "<?php
 		*/
 		public function run($until = Null){
 			$this->check_installation();
-			$this->output .= "\nStarting migration\n"; 
+			$this->output .= "\nStarting migration...\n"; 
 			foreach(glob('./versions/*.*') as $filename){
 			    require_once($filename);
 			    $klass = $this->get_class_name($filename); 
 			    $version = $this->get_version_number($filename);
 			    // check if we already ran this version 
 			    $version_exists = $this->connection->query("SELECT * FROM schema_migrations WHERE version = $version");
-			    print_r($version_exists); 
-			    $this->output .= "----- Running migration $klass \n"; 
-			    $migration = new $klass;
-			    $migration->change(); 
-			    $this->output .= $migration->output; 
+			  	
+			  	if($version_exists->num_rows == 0){
+			  		$this->output .= "----- Running migration $klass \n"; 
+			    	$migration = new $klass;
+			    	$migration->change(); 
+			    	$this->output .= $migration->output;
+			    	$this->connection->query("INSERT INTO `schema_migrations` (`version`) VALUES ('$version');");
+			  	} 
 			} 
+
+			$this->output .= "Done...\n";
 		}
 
 		/*
