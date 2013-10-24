@@ -11,7 +11,7 @@
 		
 		case 'generate':
 			if(!isset($argv[2])){
-				die("\nPlease see the help page for command usage\n");
+				die("\nPlease specify a name for the migration\n");
 			}else{
 				$migrate->generate($argv[2]);
 			}
@@ -23,12 +23,12 @@
 			}else{
 				$migrate->run();
 			}
-
-			echo $migrate->output; 
 		break;
 
 		default:
 			
 		break;
 	}	 
+
+	echo $migrate->output; 
 ?> 

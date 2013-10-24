@@ -55,8 +55,9 @@ $content = "<?php
 	}
 ?>
 ";
-	 
 	 		file_put_contents($file_path, $content);
+	 		$klass = $this->camelize($name);
+	 		$this->output .= "\nMigration $name generated\n";
 		}
 
 		/*
@@ -72,14 +73,15 @@ $content = "<?php
 		*/ 
 		public function create_table($name, $fields){
 			$qr = "CREATE TABLE IF NOT EXISTS " . $name . " (";
+			$qr .= "`id` int(11) NOT NULL AUTO_INCREMENT, PRIMARY KEY (`id`), ";	
 			$last_el = end($fields);
 			foreach ($fields as $f) {
-				$qr = $qr . "`" . $f[0] . "` " . $this->dataType($f[1]);
+				$qr .= "`" . $f[0] . "` " . $this->dataType($f[1]);
 				if($last_el != $f){
-					$qr = $qr . ","; 
+					$qr .= ","; 
 				}		
-			}		
-			$qr = $qr . ");";
+			}	
+			$qr .= ");";
 			$q = $this->connection->query($qr); 
 			if(!$q){
 				$this->output .= "There was a problem creating table $name\n";
