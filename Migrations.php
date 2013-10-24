@@ -6,6 +6,7 @@
 		protected $db_user;
 		protected $db_password;
 		protected $db_database;
+		public $output; 
 		var $connection; 
 
 		public function __construct(){
@@ -62,8 +63,8 @@ $content = "<?php
 		* Creates table with the given credentials.
 		* fields structure
 		* array( 
-		* 	array('name', 'type', 'options'), 
-		*   array('name', 'type', 'options')
+		* 	array('name', 'options'), 
+		*   array('name', 'options')
 		* )
 		* @param {string} $name -> the name of the table 
 		* @param {array} $fields -> the list of fields to build the table
@@ -73,13 +74,14 @@ $content = "<?php
 			$qr = "CREATE TABLE IF NOT EXISTS " . $name . " (";
 			$last_el = end($fields);
 			foreach ($fields as $f) {
-				$qr = $qr . "`" . $f[0] . "` " . $this->dataType($f[1]) . " " . $f[2] ;
+				$qr = $qr . "`" . $f[0] . "` " . $this->dataType($f[1]);
 				if($last_el != $f){
 					$qr = $qr . ","; 
 				}		
 			}		
 			$qr = $qr . ");";
-			return $this->connection->query($qr);
+			$this->connection->query($qr);
+			// check if there is a mysql error 
 		}
 
 		/*
@@ -138,11 +140,21 @@ $content = "<?php
 		* @param {string} -> $type
 		* @return {string}
 		*/
-		public function dataType($type){
+		public function dataType($options){
 			// @TODO improve data types
+			if(is_array($options)){
+				$type = $options['type']; 
+			}else{
+				$type = $options;
+			}
+
 			switch ($type) {
 				case 'string':
-					return 'VARCHAR(255)';	
+					if(is_array($options) && isset($options['length'])){
+						return "VARCHAR(" . $options['length'] . ")";
+					}else{
+						return "VARCHAR(255)";
+					}	
 				break;
 					
 				case 'integer': 
