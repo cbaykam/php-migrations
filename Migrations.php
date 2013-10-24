@@ -129,6 +129,21 @@ $content = "<?php
 		}
 
 		/*
+		* Removes a table from the db
+		* @params {string} <- The name of the table 
+		* @return VOID 
+		*/ 
+		public function drop_table($table){
+			$qr = "DROP TABLE `$table`"; 
+			$q = $this->connection->query($qr);
+
+			if($q){	
+				$this->output .= "Dropped table $table\n";
+			}else{
+				$this->output .= "There was a problem dropping table : $table .\n";
+			}
+		}
+		/*
 		* Creates the schema_migrations db table for keeping track of the files needed 
 		* @return {bool}
 		*/ 
