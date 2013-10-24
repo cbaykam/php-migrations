@@ -81,8 +81,10 @@ $content = "<?php
 			}		
 			$qr = $qr . ");";
 			$q = $this->connection->query($qr); 
-			if($q){
-				$this->output .= "There was a problem creating the table";
+			if(!$q){
+				$this->output .= "There was a problem creating table $name\n";
+			}else{
+				$this->output .= "Table $name created successfully\n";
 			}
 			// check if there is a mysql error 
 		}
@@ -132,8 +134,14 @@ $content = "<?php
 			foreach(glob('./versions/*.*') as $filename){
 			    require_once($filename);
 			    $klass = $this->get_class_name($filename); 
+			    $version = $this->get_version_number($filename);
+			    // check if we already ran this version 
+			    $version_exists = $this->connection->query("SELECT * FROM schema_migrations WHERE version = $version");
+			    print_r($version_exists); 
+			    $this->output .= "----- Running migration $klass \n"; 
 			    $migration = new $klass;
 			    $migration->change(); 
+			    $this->output .= $migration->output; 
 			} 
 		}
 
@@ -193,6 +201,17 @@ $content = "<?php
 			$class_name = $this->camelize($class_name);
 			$class_name = str_replace(".php", '', $class_name);
 			return $class_name; 
+		}
+
+		/*
+		* Gets the version number of the given migration file 
+		* @params {string} <- migration file name .
+		* @return {string}
+		*/ 
+		public function get_version_number($filename){
+			$class_arr = explode('/', $filename);
+			$cl_name_array = explode('_', $class_arr[2]);
+			return($cl_name_array[0]);
 		}
 	}	
 ?>
