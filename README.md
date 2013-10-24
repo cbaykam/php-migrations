@@ -7,6 +7,7 @@ Installation :
 To install the plugin download it and put it in a sub directory in your project 
 
 Make sure you have the rights to execute the migrate.php 
+        
         ./migrate.php install 
 
 Generating Migrations : 
@@ -14,6 +15,7 @@ Generating Migrations :
 
 To generate a migration you have to run the command below. With specifying the class name with underscores.
 
+		
 		./migrate.php generate the_name_of_the_migration 
 
 This will generate a php file under versions directory with the unix timestamp. 
@@ -35,6 +37,7 @@ Open the migration file you generated and do one of these below.
 				));
 			}
 		}
+
   you can either choose to specify the field type with string by choosing defaults or an array if you want to customize.
 
 * Adding a field 
@@ -47,15 +50,17 @@ Open the migration file you generated and do one of these below.
 			}
 		}
 
-* Removing a field 
-		class RemoveVeryImportantField extends Migrations{
-			public function change(){
-				$this->remove_field('users', 'strange_two');
-			}
-		}
+* Removing a field
 
-* Running migrations 
-		./migrate.php run 
+        class RemoveVeryImportantField extends Migrations{
+	        public function change(){
+		        $this->remove_field('users', 'strange_two');
+	        }
+        }
+
+* Running migrations
+
+        ./migrate.php run 
 
 Todos 
 -------------------------
