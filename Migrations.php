@@ -42,13 +42,11 @@
 		* @return {bool}
  		*/ 
 		public function generate($name){
-			$name = time() . $name; 
-			$file_path = "versions/" . $name . ".php" ;
+			$file_path = "versions/" . time() . "_" . $name . ".php" ;
 			$migrate = fopen($file_path , 'w') or die("Cannot generate the migration check file permissions.");
-			$name = preg_replace('/(?:^|_)(.?)/e',"strtoupper('$1')",$name); 
+			$name = $this->camelize($name);
 // @TODO fix this.
 $content = "<?php 
-	include('../Migrations.php');
 	class " . $name . " extends Migrations{
 		public function change(){
 
@@ -128,7 +126,9 @@ $content = "<?php
 			$this->check_installation();
 			
 			foreach(glob('./versions/*.*') as $filename){
-			    echo $filename . "\n"; 
+			    require_once($filename);
+			    $klass = $this->get_class_name($filename); 
+			    echo $klass . "\n"; 
 			} 
 		}
 
@@ -160,6 +160,24 @@ $content = "<?php
 			if(!$exists){
 				die("\nMigrations plugin is not installed properly.\n");
 			}
+		}
+
+		public function camelize($name){
+			return preg_replace('/(?:^|_)(.?)/e',"strtoupper('$1')",$name); 
+		}
+
+		/*
+		* Gets the class name of the file you've included.
+		* @param {string} <- File with path ie : ./versions/1382641175_create_users_table
+		* @return {string}
+		*/
+		public function get_class_name($filename){
+			$class_arr = explode('/', $filename);
+			$cl_name_array = explode('_', $class_arr[2]);
+			$class_name = str_replace($cl_name_array[0] . '_', '', $class_arr[2]);
+			$class_name = $this->camelize($class_name);
+			$class_name = str_replace(".php", '', $class_name);
+			return $class_name; 
 		}
 	}	
 ?>
