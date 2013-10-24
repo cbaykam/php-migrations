@@ -112,6 +112,10 @@ $content = "<?php
 					array('version', 'string', 'NULL')
 				)
 			));
+
+			if(!file_exists('./versions')){
+				mkdir('./versions', 0777, true);
+			}
 		}
 
 		/*
@@ -123,9 +127,8 @@ $content = "<?php
 			$this->check_installation();
 			
 			foreach(glob('./versions/*.*') as $filename){
-			    echo $filename . "\n";
-			}
-			// loop through migrations to see if they ran. 
+			    echo $filename . "\n"; 
+			} 
 		}
 
 		/*

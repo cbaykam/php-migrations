@@ -10,7 +10,11 @@
 		break;
 		
 		case 'generate':
-			$migrate->generate($argv[2]);
+			if(!isset($argv[2])){
+				die("\nPlease see the help page for command usage\n");
+			}else{
+				$migrate->generate($argv[2]);
+			}
 		break;
 
 		case 'run':
