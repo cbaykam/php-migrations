@@ -6,7 +6,7 @@
 		protected $db_user;
 		protected $db_password;
 		protected $db_database;
-		public $output; 
+		public $output = ""; 
 		var $connection; 
 
 		public function __construct(){
@@ -80,7 +80,10 @@ $content = "<?php
 				}		
 			}		
 			$qr = $qr . ");";
-			$this->connection->query($qr);
+			$q = $this->connection->query($qr);
+			if(!$q){
+				$this->output .= "There was a problem creating the table";
+			}
 			// check if there is a mysql error 
 		}
 
@@ -109,8 +112,7 @@ $content = "<?php
 
 			$var = $this->create_table("schema_migrations",
 				array(
-					array('id', 'integer', 'NOT NULL'), 
-					array('version', 'string', 'NULL')
+					array('version', 'string')
 				)
 			);
 
@@ -126,7 +128,7 @@ $content = "<?php
 		*/
 		public function run($until = Null){
 			$this->check_installation();
-			
+			$this->output .= "\nStarting migration\n"; 
 			foreach(glob('./versions/*.*') as $filename){
 			    require_once($filename);
 			    $klass = $this->get_class_name($filename); 

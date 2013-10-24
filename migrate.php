@@ -23,10 +23,12 @@
 			}else{
 				$migrate->run();
 			}
+
+			echo $migrate->output; 
 		break;
 
 		default:
 			
 		break;
-	}
+	}	 
 ?> 
