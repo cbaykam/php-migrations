@@ -4,8 +4,8 @@
 	*/  
 	class DB_CONFIG{
 		var $host = 'localhost';
-		var	$user = 'root'; 
-		var	$pass = 'deneme';
-		var	$db   = 'migration-test';
+		var	$user = 'your_db_user'; 
+		var	$pass = 'your_db_pass';
+		var	$db   = 'your_db_name';
 	}
 ?>
