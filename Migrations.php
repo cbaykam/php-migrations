@@ -215,7 +215,29 @@ $content = "<?php
 				break;
 					
 				case 'integer': 
-					return "INT(11)";
+					if(is_array($options) && isset($options['length'])){
+						return "INT(" . $options['length'] . ")";
+					}else{
+						return "INT(11)";
+					}
+				break;
+
+				case 'datetime':
+					return "datetime NOT NULL DEFAULT '0000-00-00 00:00:00'"
+				break;
+
+				case 'enum':
+					if(is_array($options) && isset($options['options'])){
+						$last_el = $options['options'];
+						$opt = "";
+						foreach ($options as $o) {
+							$opt .= $o;
+							if($o != $last_el){
+								$opt .= ",";
+							}
+						}
+						return "enum()"; 
+					}
 				break;
 
 				default:
