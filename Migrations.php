@@ -223,7 +223,26 @@ $content = "<?php
 				break;
 
 				case 'datetime':
-					return "datetime NOT NULL DEFAULT '0000-00-00 00:00:00'"
+					if(is_array($options)){
+						$datetime_ret = "datetime ";
+						if(isset($options['null']) && !$options['null']){
+							$datetime_ret .= "NOT NULL ";
+						}
+						
+						if(isset($options['default'])){
+							$datetime_ret .= "DEFAULT '" . $options['default'] . "'";
+						}else{
+							if($options['null']) && !$options['null']){
+								$datetime_ret .= "NOT NULL DEFAULT '0000-00-00 00:00:00'";
+							}else{
+								$datetime_ret .= "DEFAULT NULL";
+							}
+						}
+
+						return $datetime_ret;
+					}else{
+						return "datetime NOT NULL DEFAULT '0000-00-00 00:00:00'";
+					}
 				break;
 
 				case 'enum':
@@ -236,10 +255,10 @@ $content = "<?php
 								$opt .= ",";
 							}
 						}
-						return "enum()"; 
+						return "enum(".$opt.")"; 
 					}
 				break;
-
+ 
 				default:
 					return $options; 
 				break;
