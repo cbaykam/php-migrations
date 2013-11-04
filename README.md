@@ -66,6 +66,18 @@ Open the migration file you generated and do one of these below.
 
         ./migrate.php run 
 
+Field types and options 
+-------------------------
+* String 
+	length
+* Integer 
+	length 
+* Enum 
+	options
+* Datetime 
+	null 
+	options
+
 Todos 
 -------------------------
 * Add more datatypes 
