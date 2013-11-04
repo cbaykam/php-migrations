@@ -27,7 +27,7 @@ This will generate a php file under versions directory with the unix timestamp.
 Coding migration files : 
 -------------------------
 
-Open the migration file you generated and do one of these below. 
+Open the migration file you generated and in the up method add the change you want to add. In the down methid add the reverse functions for rolling back the change if something goes wrong. 
 
 * Adding a table 
 
