@@ -50,7 +50,11 @@
 // @TODO fix this.
 $content = "<?php 
 	class " . $name . " extends Migrations{
-		public function change(){
+		public function up(){
+
+		}
+
+		public function down(){
 
 		}
 	}
@@ -140,7 +144,7 @@ $content = "<?php
 		* @return VOID 
 		*/ 
 		public function drop_table($table){
-			$qr = "DROP TABLE `$table`"; 
+			$qr = "DROP TABLE IF EXISTS `$table`"; 
 			$q = $this->connection->query($qr);
 
 			if($q){	
@@ -194,7 +198,7 @@ $content = "<?php
 			  	if($version_exists->num_rows == 0){
 			  		$this->output .= "----- Running migration $klass \n"; 
 			    	$migration = new $klass;
-			    	$migration->change(); 
+			    	$migration->up(); 
 			    	$this->output .= $migration->output;
 			    	$migration_ran = true; 
 			    	foreach($migration->resultset as $r){
@@ -204,6 +208,8 @@ $content = "<?php
 			    	}
 			    	if($migration_ran){
 			    		$this->connection->query("INSERT INTO `schema_migrations` (`version`) VALUES ('$version');");
+			    	}else{
+			    		$migration->down();
 			    	}
 
 			  	} 
