@@ -84,3 +84,4 @@ Todos
 * Make output messages smarter 
 * Add a rollback method. 
 * Add schema dump and schema create.
+* Add availability to handle migrations with the same class name. 

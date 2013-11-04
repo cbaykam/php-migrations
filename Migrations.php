@@ -6,7 +6,8 @@
 		protected $db_user;
 		protected $db_password;
 		protected $db_database;
-		public $output = ""; 
+		public $output = "";
+		public $resultset = array();
 		var $connection; 
 
 		public function __construct(){
@@ -86,8 +87,10 @@ $content = "<?php
 			$q = $this->connection->query($qr); 
 			if(!$q){
 				$this->output .= "There was a problem creating table $name\n";
+				$this->resultset[] = false; 
 			}else{
 				$this->output .= "Table $name created successfully\n";
+				$this->resultset[] = true;
 			}
 			// check if there is a mysql error 
 		}
@@ -105,8 +108,10 @@ $content = "<?php
 			$q = $this->connection->query($qr);
 			if($q){	
 				$this->output .= "Added field $field to table $table. \n";
+				$this->resultset[] = true;
 			}else{
 				$this->output .= "There was a problem adding field: $field .\n";
+				$this->resultset[] = false;
 			}
 		}
 
@@ -122,8 +127,10 @@ $content = "<?php
 
 			if($q){	
 				$this->output .= "Removed field $field to table $table. \n";
+				$this->resultset[] = true;
 			}else{
 				$this->output .= "There was a problem removing field: $field .\n";
+				$this->resultset[] = false;
 			}
 		}
 
@@ -138,8 +145,10 @@ $content = "<?php
 
 			if($q){	
 				$this->output .= "Dropped table $table\n";
+				$this->resultset[] = true;
 			}else{
 				$this->output .= "There was a problem dropping table : $table .\n";
+				$this->resultset[] = false;
 			}
 		}
 		/*
@@ -174,6 +183,7 @@ $content = "<?php
 		public function run($until = Null){
 			$this->check_installation();
 			$this->output .= "\nStarting migration...\n"; 
+			$migration_successful = true; 
 			foreach(glob('./versions/*.*') as $filename){
 			    require_once($filename);
 			    $klass = $this->get_class_name($filename); 
@@ -186,7 +196,16 @@ $content = "<?php
 			    	$migration = new $klass;
 			    	$migration->change(); 
 			    	$this->output .= $migration->output;
-			    	$this->connection->query("INSERT INTO `schema_migrations` (`version`) VALUES ('$version');");
+			    	$migration_ran = true; 
+			    	foreach($migration->resultset as $r){
+			    		if(!$r){
+			    			$migration_ran = false; 
+			    		}
+			    	}
+			    	if($migration_ran){
+			    		$this->connection->query("INSERT INTO `schema_migrations` (`version`) VALUES ('$version');");
+			    	}
+
 			  	} 
 			} 
 
