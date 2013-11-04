@@ -103,7 +103,6 @@ $content = "<?php
 		public function add_field($table, $field, $options){
 			$qr = "ALTER TABLE `$table` ADD $field " . $this->datatype($options);
 			$q = $this->connection->query($qr);
-
 			if($q){	
 				$this->output .= "Added field $field to table $table. \n";
 			}else{
@@ -169,6 +168,8 @@ $content = "<?php
 		* Runs the migrations in their order.
 		* @param {until} -> the id of the migraion you want run until. 
 		* @return {bool} 
+		* @TODO error handling : Does not record the migration if all the migrations run.
+		* @TODO rollback if the run is not successful. 
 		*/
 		public function run($until = Null){
 			$this->check_installation();
@@ -232,7 +233,7 @@ $content = "<?php
 						if(isset($options['default'])){
 							$datetime_ret .= "DEFAULT '" . $options['default'] . "'";
 						}else{
-							if($options['null']) && !$options['null']){
+							if($options['null'] && !$options['null']){
 								$datetime_ret .= "NOT NULL DEFAULT '0000-00-00 00:00:00'";
 							}else{
 								$datetime_ret .= "DEFAULT NULL";
@@ -247,15 +248,18 @@ $content = "<?php
 
 				case 'enum':
 					if(is_array($options) && isset($options['options'])){
-						$last_el = $options['options'];
+						$last_el = end($options['options']);
 						$opt = "";
-						foreach ($options as $o) {
-							$opt .= $o;
+						foreach ($options['options'] as $o) {
+							$opt .= "'$o'";
 							if($o != $last_el){
 								$opt .= ",";
 							}
 						}
 						return "enum(".$opt.")"; 
+					}
+					else{
+						return $options;
 					}
 				break;
  
