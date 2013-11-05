@@ -29,7 +29,7 @@ Coding migration files :
 
 Open the migration file you generated and in the up method add the change you want to add. In the down methid add the reverse functions for rolling back the change if something goes wrong. 
 
-* Adding a table 
+* Adding a table (when using "create_table", Migrations will automatically add an auto-incrementing primary key column called "id")
 
 	 
 		class CreateUsersTable extends Migrations{
@@ -81,13 +81,15 @@ Field types and options
 For existing projects
 -------------------------
 
-Export the latest version of your database and generate a new migration ie: database.sql 
+Install the plugin, export the latest version of your database and generate a new migration ie: database.sql 
 		
 		./migrate.php generate initial_version 
 
 Then open the migration file and in the up method please insert 
 
 		$this->runsql('database.sql');
+
+The database sql file path is relative to the path you installed the plugin.
 
 Todos 
 -------------------------
