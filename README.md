@@ -78,10 +78,20 @@ Field types and options
 	null 
 	options
 
+For existing projects
+-------------------------
+
+Export the latest version of your database and generate a new migration ie: database.sql 
+		
+		./migrate.php generate initial_version 
+
+Then open the migration file and in the up method please insert 
+
+		$this->runsql('database.sql');
+
 Todos 
 -------------------------
 * Add more datatypes 
 * Make output messages smarter 
-* Add a rollback method. 
 * Add schema dump and schema create.
 * Add availability to handle migrations with the same class name. 

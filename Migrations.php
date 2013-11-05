@@ -188,7 +188,7 @@ $content = "<?php
 			$this->check_installation();
 			$this->output .= "\nStarting migration...\n"; 
 			$migration_successful = true; 
-			foreach(glob('./versions/*.*') as $filename){
+			foreach(glob('./versions/*.php') as $filename){
 			    require_once($filename);
 			    $klass = $this->get_class_name($filename); 
 			    $version = $this->get_version_number($filename);
@@ -217,6 +217,50 @@ $content = "<?php
 
 			$this->output .= "Done...\n";
 		}
+
+		/*
+		* This methos is for being able to use the migrations plugin in existing projects. 
+		* Simply get the latest version of your database as sql in versions directory and run that for all your team 
+		* to have a common ground. 
+		* @param {string} -> filename 
+		* @return {bool} 
+		*/
+		public function runsql($filename){
+			$this->SplitSQL('versions/' . $filename);
+			$this->resultset[] = true; 
+		}
+
+		public function SplitSQL($file, $delimiter = ';'){
+    		set_time_limit(0);
+    		if (is_file($file) === true){
+        		$file = fopen($file, 'r');
+        		if (is_resource($file) === true){
+            		$query = array();
+					while (feof($file) === false){
+                		$query[] = fgets($file);
+                		if (preg_match('~' . preg_quote($delimiter, '~') . '\s*$~iS', end($query)) === 1){
+                    		$query = trim(implode('', $query));
+							if ($this->connection->query($query) === false){
+                        		$this->output .= 'ERROR: ' . $query . "\n";
+                    		}else{
+                        		$this->output .= 'SUCCESS: ' . $query . "\n";
+                    		}
+                    		
+                    		while (ob_get_level() > 0){
+                        		ob_end_flush();
+                    		}
+							flush();
+                		}
+
+                		if (is_string($query) === true){
+                    		$query = array();
+                		}
+            		}
+					return fclose($file);
+        		}		
+    		}
+    		return false;
+    	}
 
 		/*
 		* The datatype returns the datatype from the given string. 
