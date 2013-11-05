@@ -33,12 +33,17 @@ Open the migration file you generated and in the up method add the change you wa
 
 	 
 		class CreateUsersTable extends Migrations{
-			public function change(){
+			public function up(){
 				$this->create_table('users', array(
 					array('username', 'string'),
 					array('password', array('type' => 'string', 'length' => 252)),
 					array('sign_in_count', 'integer')
 				));
+			}
+
+			// We have to code the reverse of it for being able to rollback
+			public function down(){
+				$this->drop_table('users');
 			}
 		}
 
@@ -47,20 +52,46 @@ Open the migration file you generated and in the up method add the change you wa
 * Adding a field 
 		
 		class AddAStrangeFieldToUsers extends Migrations{
-			public function change(){
+			public function up(){
 				$this->add_field('users', 'strange_field', array('type' => 'string', 'length' => 12));
 				$this->add_field('users', 'strange_two', 'integer');
 				$this->add_field('users', 'strange_three', 'string');
+			}
+
+			public function down(){
+				$this->remove_field('users', 'strange_field');
+				$this->remove_field('users', 'strange_two');
+				$this->remove_field('users', 'strange_three');
 			}
 		}
 
 * Removing a field
 
         class RemoveVeryImportantField extends Migrations{
-	        public function change(){
+	        public function up(){
 		        $this->remove_field('users', 'strange_two');
 	        }
+
+	        public function down(){
+	        	$this->add_field('users', 'strange_two', 'string');
+	    	}
         }
+
+* Removing a table 
+
+		class CreateUsersTable extends Migrations{
+			public function up(){
+				$this->drop_table('users');
+			}
+
+			public function down(){
+				$this->create_table('users', array(
+					array('username', 'string'),
+					array('password', array('type' => 'string', 'length' => 252)),
+					array('sign_in_count', 'integer')
+				));
+			}
+		}
 
 * Running migrations
 
