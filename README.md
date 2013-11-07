@@ -29,12 +29,14 @@ Coding migration files :
 
 Open the migration file you generated and in the up method add the change you want to add. In the down methid add the reverse functions for rolling back the change if something goes wrong. 
 
-* Adding a table (when using "create_table", Migrations will automatically add an auto-incrementing primary key column called "id")
+* Adding a table
 
 	 
 		class CreateUsersTable extends Migrations{
 			public function up(){
 				$this->create_table('users', array(
+					array('primaryKey', array('name_of_key_1')), // This is ofr adding a primary key, Supports multiple primary keys. 
+
 					array('username', 'string'),
 					array('password', array('type' => 'string', 'length' => 252)),
 					array('sign_in_count', 'integer')
@@ -77,6 +79,30 @@ Open the migration file you generated and in the up method add the change you wa
 	    	}
         }
 
+* Adding a primary key
+
+        class AddPrimaryKey extends Migrations{
+	        public function up(){
+	        	$this-> add_primary_key('users', array('id')); // For existing fields. Also can be array of multiple fields
+	        }
+		        $this->remove_primary_key('users');
+	    	}
+        }
+
+* Removing a primary key
+
+        class RemovePrimaryKey extends Migrations{
+	        public function up(){
+		        $this->remove_primary_key('users');
+	        }
+
+	        public function down(){
+	        	$this-> add_primary_key('users', array('id')); // For existing fields. Also can be array of multiple fields
+			// For adding a new id key:
+			// $this->add_field('users', 'id', array('type' => 'integer', 'null' => false, 'autoincrement' => true, 'primarykey' => true, 'first' => true));
+	    	}
+        }
+
 * Removing a table 
 
 		class CreateUsersTable extends Migrations{
@@ -103,6 +129,10 @@ Field types and options
 	length
 * Integer 
 	length 
+	null
+	autoincrement
+	primarykey
+	first
 * Enum 
 	options
 * Datetime 
@@ -126,5 +156,6 @@ Todos
 -------------------------
 * Add more datatypes 
 * Make output messages smarter 
-* Add schema dump and schema create.
-* Add availability to handle migrations with the same class name. 
+* Add schema dump.
+* Add availability to handle migrations with the same class name.
+* Support Postgresql 

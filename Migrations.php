@@ -78,21 +78,31 @@ $content = "<?php
 		*/ 
 		public function create_table($name, $fields){
 			$qr = "CREATE TABLE IF NOT EXISTS " . $name . " (";
-			// @TODO add more options for the key 
-			$qr .= "`id` int(11) NOT NULL AUTO_INCREMENT, PRIMARY KEY (`id`), ";	
+			// @TODO add_primary key optional when creating a table. 	
 			$last_el = end($fields);
-			foreach ($fields as $f) {
-				$qr .= "`" . $f[0] . "` " . $this->dataType($f[1]);
-				if($last_el != $f){
-					$qr .= ","; 
-				}		
+			$priKey = false;
+			foreach ($fields as $k => $f) {
+				if($f[0] == 'primaryKey'){
+					$pri = true;
+					$priKey = $k;
+				}else{
+					$qr .= "`" . $f[0] . "` " . $this->dataType($f[1]);
+					if($last_el != $f){
+						$qr .= ","; 
+					}	
+				}	
 			}	
+
 			$qr .= ");";
-			$q = $this->connection->query($qr); 
+			$q = $this->connection->query($qr);
+
 			if(!$q){
 				$this->output .= "There was a problem creating table $name\n";
 				$this->resultset[] = false; 
 			}else{
+				if($pri){
+					$this->add_primary_key($name, $fields[$priKey][1]);
+				}
 				$this->output .= "Table $name created successfully\n";
 				$this->resultset[] = true;
 			}
@@ -108,15 +118,25 @@ $content = "<?php
 		* @return VOID
 		*/
 		public function add_field($table, $field, $options){
-			$qr = "ALTER TABLE `$table` ADD $field " . $this->datatype($options);
-			$q = $this->connection->query($qr);
-			if($q){	
-				$this->output .= "Added field $field to table $table. \n";
-				$this->resultset[] = true;
+			$exists = $this->connection->query(
+				"SELECT * FROM INFORMATION_SCHEMA.COLUMNS
+				  	WHERE TABLE_NAME = '" . $table . "' AND COLUMN_NAME = '" . $f . "'"
+			);
+
+			if($exists->num_rows == 0){
+				$qr = "ALTER TABLE `$table` ADD $field " . $this->datatype($options);
+				$q = $this->connection->query($qr);
+				if($q){	
+					$this->output .= "Added field $field to table $table. \n";
+					$this->resultset[] = true;
+				}else{
+					$this->output .= "There was a problem adding field: $field .\n";
+					$this->resultset[] = false;
+				}
 			}else{
-				$this->output .= "There was a problem adding field: $field .\n";
-				$this->resultset[] = false;
-			}
+				$this->output .= "The field already exists";
+ 				$this->resultset[] = true;
+ 			}
 		}
 
 		/*
@@ -155,6 +175,49 @@ $content = "<?php
 				$this->resultset[] = false;
 			}
 		}
+		
+		/*
+		* Removes primary key from a table
+		* @params {string} <- The name of the table 
+		* @return VOID 
+		*/ 
+		public function remove_primary_key($table){
+			$qr = "ALTER TABLE `$table` DROP PRIMARY KEY"; 
+			$q = $this->connection->query($qr);
+
+			if($q){	
+				$this->output .= "Removed primary key from table $table\n";
+				$this->resultset[] = true;
+			}else{
+				$this->output .= "There was a problem removing primary key : $table .\n";
+				$this->resultset[] = false;
+			}
+		}
+		
+		/*
+		* Adds primary key to a table
+		* @params {string} -> The name of the table 
+		* @param {array} -> array of fields for primary key
+		* @return VOID 
+		*/ 
+		public function add_primary_key($table, $fields){
+			foreach ($fields as $f) {
+				// @TODO this is only supported by mysql.
+				// Support postgresql
+				$this->add_field($table, $f, 'integer');
+			}
+			$qr = "ALTER TABLE `$table` ADD PRIMARY KEY (".implode(", ",$fields).")"; 
+			$q = $this->connection->query($qr);
+
+			if($q){	
+				$this->output .= "Added primary key to table $table\n";
+				$this->resultset[] = true;
+			}else{
+				$this->output .= "There was a problem adding primary key : $table .\n";
+				$this->resultset[] = false;
+			}
+		}
+		
 		/*
 		* Creates the schema_migrations db table for keeping track of the files needed 
 		* @return {bool}
@@ -242,8 +305,6 @@ $content = "<?php
                     		$query = trim(implode('', $query));
 							if ($this->connection->query($query) === false){
                         		$this->output .= 'ERROR: ' . $query . "\n";
-                    		}else{
-                        		$this->output .= 'SUCCESS: ' . $query . "\n";
                     		}
                     		
                     		while (ob_get_level() > 0){
@@ -284,12 +345,29 @@ $content = "<?php
 					}	
 				break;
 					
-				case 'integer': 
-					if(is_array($options) && isset($options['length'])){
-						return "INT(" . $options['length'] . ")";
-					}else{
-						return "INT(11)";
-					}
+				case 'integer':
+					if(is_array($options)){
+                        if(isset($options['length'])){
+                            $int_ret = "INT(" . $options['length'] . ") ";
+                        }else{
+                            $int_ret = "INT(11) ";
+                        }
+						if(isset($options['null']) && !$options['null']){
+							$int_ret .= "NOT NULL ";
+						}
+						if(isset($options['autoincrement'])){
+							$int_ret .= "AUTO_INCREMENT ";
+						}
+						if(isset($options['primarykey'])){
+							$int_ret .= "PRIMARY KEY ";
+						}
+						if(isset($options['first'])){
+							$int_ret .= "FIRST ";
+						}
+						return $int_ret;
+                    } else {
+                        return "INT(11)";
+                    }
 				break;
 
 				case 'datetime':
