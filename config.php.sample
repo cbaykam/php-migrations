@@ -1,11 +1,12 @@
 <?php 
+	// Require the config file of the project in here if necessary 
 	/* This is the configuration file, in the future may need to modify it to 
 	* fetch from a file in the project
 	*/  
 	class DB_CONFIG{
-		var $host = 'localhost';
-		var	$user = 'your_db_user'; 
-		var	$pass = 'your_db_pass';
-		var	$db   = 'your_db_name';
+		var $host = '';
+		var	$user = ''; 
+		var	$pass = '';
+		var	$db   = '';
 	}
 ?>

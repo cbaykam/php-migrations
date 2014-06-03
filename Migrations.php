@@ -81,32 +81,40 @@ $content = "<?php
 			// @TODO add_primary key optional when creating a table. 	
 			$last_el = end($fields);
 			$priKey = false;
+			$pri = false; 
 			foreach ($fields as $k => $f) {
-				if($f[0] == 'primaryKey'){
+				// @TODO add option to specify the array of options for the primary key. 
+				if($f[1] == 'primaryKey'){
 					$pri = true;
 					$priKey = $k;
 				}else{
-					$qr .= "`" . $f[0] . "` " . $this->dataType($f[1]);
+					if(isset($f[1]['type']) && $f[1]['type'] == 'foreignKey'){
+						
+					}else{
+						$qr .= "`" . $f[0] . "` ";
+					}
+					
+					$qr .= $this->dataType($f[1]);
+
 					if($last_el != $f){
 						$qr .= ","; 
-					}	
+					}
 				}	
 			}	
 
-			$qr .= ");";
-			$q = $this->connection->query($qr);
+			if($pri){
+				$qr .= ", `id` int(11) NOT NULL AUTO_INCREMENT PRIMARY KEY"; 
+			}
 
+			$qr .= ");"; 
+			$q = $this->connection->query($qr);
 			if(!$q){
 				$this->output .= "There was a problem creating table $name\n";
 				$this->resultset[] = false; 
 			}else{
-				if($pri){
-					$this->add_primary_key($name, $fields[$priKey][1]);
-				}
 				$this->output .= "Table $name created successfully\n";
 				$this->resultset[] = true;
-			}
-			// check if there is a mysql error 
+			}	
 		}
 
 		/*
@@ -120,7 +128,7 @@ $content = "<?php
 		public function add_field($table, $field, $options){
 			$exists = $this->connection->query(
 				"SELECT * FROM INFORMATION_SCHEMA.COLUMNS
-				  	WHERE TABLE_NAME = '" . $table . "' AND COLUMN_NAME = '" . $f . "'"
+				  	WHERE TABLE_NAME = '" . $table . "' AND COLUMN_NAME = '" . $field . "'"
 			);
 
 			if($exists->num_rows == 0){
@@ -134,7 +142,7 @@ $content = "<?php
 					$this->resultset[] = false;
 				}
 			}else{
-				$this->output .= "The field already exists";
+				$this->output .= "The field already exists \n";
  				$this->resultset[] = true;
  			}
 		}
@@ -194,9 +202,9 @@ $content = "<?php
 			}
 		}
 		
-		/*
+		/**
 		* Adds primary key to a table
-		* @params {string} -> The name of the table 
+		* @param {string} -> The name of the table 
 		* @param {array} -> array of fields for primary key
 		* @return VOID 
 		*/ 
@@ -217,8 +225,81 @@ $content = "<?php
 				$this->resultset[] = false;
 			}
 		}
+
+		/** 
+		* Adds a foreign key constraint to the specified table
+		* @param {string} -> the name of the table which has the reference id
+		* @param {mixed} -> either the table.field or the array of options.
+		* @param {array} -> options -> the options array to pass to the sql script 
+		*   You can pass this as options array, Possible parameters 
+		*		table -> the name of the table you want to add the foreign constraint to.
+		*		field -> the field name in the table 
+		*		cascade -> Weather or not you want to delete the records in the referenced table 
+		*		remote_key -> the id field in the table you want to reference 	 
+		* 		
+		* @return {bool}
+		*/
+
+		public function add_foreign_constraint($table, $field, $options = array()){
+			if(!is_array($field)){
+				$field = explode('.', $field);
+				$options['table'] = $field[0];
+				$options['field'] = $field[1]; 
+							 
+			}else{
+				$opt_slip = explode('.', $field);
+				$options['table'] = $opt_slip[0]; 
+				$options['field'] = $opt_slip[1]; 
+			}
+
+			if(!isset($options['cascade'])){
+				$options['cascade'] = true;
+			}
+
+			$qr = "ALTER TABLE `". $options['table'] ."` 
+			  ADD CONSTRAINT ". $options['table'] . "_" . $table . "_fk" ."
+			  FOREIGN KEY (". $options['field'] .") REFERENCES $table(";
+
+			if(isset($options['remote_key'])){
+				$qr .= $options['remote_key'] . ")"; 
+			}else{
+				$qr .= "id)";
+			}
+
+			if($options['cascade']){
+				$qr .= " ON DELETE CASCADE"; 
+			}
+
+			$q = $this->connection->query($qr);
+
+			if($q){	
+				$this->output .= "Added foreign constraint to table $table\n";
+				$this->resultset[] = true;
+			}else{
+				$this->output .= "There was a problem adding foreign constraint : $table .\n";
+				$this->resultset[] = false;
+			}
+		}
+
+		/**
+		* Removes the foreign constraint from a table. 
+		* @param {string} -> the table to remove the constraint from
+		* @param {string} -> the referencing table name
+		*/
+
+		public function remove_foreign_constraint($table1, $table2){
+			$q = $this->connection->query("ALTER TABLE $table1 DROP FOREIGN KEY " . $table1 . "_" . $table2 . "_fk");
+
+			if($q){	
+				$this->output .= "Removed foreign constraint from table $table1\n";
+				$this->resultset[] = true;
+			}else{
+				$this->output .= "There was a problem removing foreign constraint : $table1 .\n";
+				$this->resultset[] = false;
+			}
+		}
 		
-		/*
+		/** 
 		* Creates the schema_migrations db table for keeping track of the files needed 
 		* @return {bool}
 		*/ 
@@ -247,7 +328,7 @@ $content = "<?php
 		* @TODO error handling : Does not record the migration if all the migrations run.
 		* @TODO rollback if the run is not successful. 
 		*/
-		public function run($until = Null){
+		public function run($until = Null){ 
 			$this->check_installation();
 			$this->output .= "\nStarting migration...\n"; 
 			$migration_successful = true; 
@@ -257,7 +338,6 @@ $content = "<?php
 			    $version = $this->get_version_number($filename);
 			    // check if we already ran this version 
 			    $version_exists = $this->connection->query("SELECT * FROM schema_migrations WHERE version = $version");
-			  	
 			  	if($version_exists->num_rows == 0){
 			  		$this->output .= "----- Running migration $klass \n"; 
 			    	$migration = new $klass;
@@ -282,7 +362,22 @@ $content = "<?php
 		}
 
 		/*
-		* This methos is for being able to use the migrations plugin in existing projects. 
+		* Runs a raw query
+		* @param {query} -> sql query 
+		* @return VOID 
+		*/
+		public function runquery($query){
+            if ($this->connection->query($query) === false){
+                $this->output .= 'ERROR: ' . $query . "\n";
+				$this->resultset[] = false;
+            } else {
+				$this->output .= "Ran query $query\n";
+				$this->resultset[] = true;
+            }
+		}
+
+		/*
+		* This method is for being able to use the migrations plugin in existing projects. 
 		* Simply get the latest version of your database as sql in versions directory and run that for all your team 
 		* to have a common ground. 
 		* @param {string} -> filename 
@@ -355,6 +450,9 @@ $content = "<?php
 						if(isset($options['null']) && !$options['null']){
 							$int_ret .= "NOT NULL ";
 						}
+						if(isset($options['default'])){
+							$int_ret .= "DEFAULT " . $options['default'];
+						}
 						if(isset($options['autoincrement'])){
 							$int_ret .= "AUTO_INCREMENT ";
 						}
@@ -372,11 +470,10 @@ $content = "<?php
 
 				case 'datetime':
 					if(is_array($options)){
-						$datetime_ret = "datetime ";
+						$datetime_ret = "datetime";
 						if(isset($options['null']) && !$options['null']){
 							$datetime_ret .= "NOT NULL ";
-						}
-						
+						}						
 						if(isset($options['default'])){
 							$datetime_ret .= "DEFAULT '" . $options['default'] . "'";
 						}else{
@@ -409,11 +506,89 @@ $content = "<?php
 						return $options;
 					}
 				break;
+				// Adds  bility to add float values 
+				case 'float': 
+					if(is_array($options)){
+						// @TODO support for the array values for the float
+					}else{
+						return 'float NOT NULL';
+					}
+				break; 
+				// adds a foreign key constraint. 
+				case 'foreignKey': 
+					if(is_array($options)){
+						$ret = "`". $options['name'] ."` INT(11) NOT NULL, FOREIGN KEY ("
+							. $options['name'] .") REFERENCES " . $options['table'] . " ";
+						if(isset($options['key'])){
+							$ret .= "(" . $options['key'] . ") "; 
+						}else{
+							$ret .= "(id) ";
+						}
+
+						if(isset($options['cascade']) && $options['cascade']){
+							$ret .= "ON DELETE CASCADE"; 
+						}	
+						return $ret ; 
+					}else{
+						return $options; 
+					}
+				break; 	
+
+				case 'text': 
+					return "TEXT NOT NULL"; 
+				break; 
  
 				default:
 					return $options; 
 				break;
 			}
+		}
+
+		/*
+		* runs down method of the migration. 
+		* @param {int} -> the id of the migration 
+		* @param {bool} (otional) -> do you want to delete the file?  
+		* @return {bool}
+		*/
+		public function run_down($id){
+			$mig = $this->get_by_id($id);
+			if(!empty($mig)){
+				// does the user wants to delete the file. Read from console. 
+				$console = readline("\nDo you want to delete the migration file. [y/n]\n"); 
+				while($console != 'y' && $console != 'n'){
+					$console = readline("\nPlease enter a valid option (case-sensitive). [y/n]\n");
+				}
+				// load the migration 
+				require_once($mig);
+				// like in ruby :) 
+				$klass = $this->get_class_name($mig);
+				$migration = new $klass; 
+				$migration->down();
+				if($console == 'y'){
+					// delete the migration file. 
+					unlink($mig);
+				}
+			}else{
+				die("Could not find the migration file.\n");
+			}
+		}
+
+		/*
+		* Get the migration by id 
+		* @param {integer}
+		* @return {string} -> the name of the file to open. 
+		*/
+		public function get_by_id($id){
+			if(strlen(strval($id)) == 10){
+				foreach (glob('./versions/*.php') as $filename) {
+					if(strpos($filename, $id) !== false){
+						return $filename; 
+					}
+				}
+			}else{
+				die("\n Please enter id of the migration completely. \n");
+			}
+			return false; 
 		}
 
 		public function check_installation(){

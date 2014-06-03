@@ -27,7 +27,7 @@ This will generate a php file under versions directory with the unix timestamp.
 Coding migration files : 
 -------------------------
 
-Open the migration file you generated and in the up method add the change you want to add. In the down methid add the reverse functions for rolling back the change if something goes wrong. 
+Open the migration file you generated and in the up method add the change you want to add. In the down method add the reverse functions for rolling back the change if something goes wrong. 
 
 * Adding a table
 
@@ -35,7 +35,7 @@ Open the migration file you generated and in the up method add the change you wa
 		class CreateUsersTable extends Migrations{
 			public function up(){
 				$this->create_table('users', array(
-					array('primaryKey', array('name_of_key_1')), // This is ofr adding a primary key, Supports multiple primary keys. 
+					array('primaryKey', array('name_of_key_1')), // This is for adding a primary key, Supports multiple primary keys. 
 
 					array('username', 'string'),
 					array('password', array('type' => 'string', 'length' => 252)),
@@ -56,12 +56,14 @@ Open the migration file you generated and in the up method add the change you wa
 		class AddAStrangeFieldToUsers extends Migrations{
 			public function up(){
 				$this->add_field('users', 'strange_field', array('type' => 'string', 'length' => 12));
+				$this->add_field('users', 'strange_notnull', array('type' => 'integer', 'null' => false));
 				$this->add_field('users', 'strange_two', 'integer');
 				$this->add_field('users', 'strange_three', 'string');
 			}
 
 			public function down(){
 				$this->remove_field('users', 'strange_field');
+				$this->remove_field('users', 'strange_notnull');
 				$this->remove_field('users', 'strange_two');
 				$this->remove_field('users', 'strange_three');
 			}
@@ -119,6 +121,18 @@ Open the migration file you generated and in the up method add the change you wa
 			}
 		}
 
+* Executing a raw sql query 
+
+		class AddSpecialColumn extends Migrations{
+			public function up(){
+				$this->runquery('ALTER TABLE `users` ADD `is_advertiser` BOOLEAN NOT NULL DEFAULT FALSE AFTER `is_presenter`;');
+			}
+
+			public function down(){
+				$this->remove_field('users','is_advertiser');
+			}
+		}
+
 * Running migrations
 
         ./migrate.php run 
@@ -138,6 +152,8 @@ Field types and options
 * Datetime 
 	null 
 	options
+* ForeignKey 
+	options 
 
 For existing projects
 -------------------------
