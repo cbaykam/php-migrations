@@ -7,6 +7,7 @@ This plugin enables to migrate your db tables as in Ruby on Rails.
 Installation : 
 -------------------------
 
+* With Composer
 To install the plugin download it and put it in a sub directory in your project 
 
 Make sure you have the rights to execute the migrate.php 

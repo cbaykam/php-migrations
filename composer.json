@@ -1,0 +1,20 @@
+{
+    "name": "cbaykam/php-migrations",
+    "type": "library",
+    "description": "Database migrations for php 5.x",
+    "keywords": ["migration","database"],
+    "homepage": "https://github.com/cbaykam/php-migrations",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Cem Baykam",
+            "email": "cbaykam@gmail.com",
+            "role": "Developer"
+        }
+    ],
+    "require": {
+        "php": ">=5.3.0"
+    },
+    "autoload": {
+    }
+}
