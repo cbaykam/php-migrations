@@ -8,7 +8,12 @@ Installation :
 -------------------------
 
 * With Composer
-To install the plugin download it and put it in a sub directory in your project 
+	* Add 
+		cbaykam/php-migrations 
+	To your composer.json file 
+		composer.phar install
+* With Git clone or download 
+	To install the plugin download it and put it in a sub directory in your project 
 
 Make sure you have the rights to execute the migrate.php 
 Move the config.php.sample to config.php and update the contents with your db credentials.
