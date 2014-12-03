@@ -258,8 +258,8 @@ $content = "<?php
 
 			$qr = "ALTER TABLE `". $options['table'] ."` 
 			  ADD CONSTRAINT ". $options['table'] . "_" . $table . "_fk" ."
-			  FOREIGN KEY (". $options['field'] .") REFERENCES $table(";
-
+			  FOREIGN KEY (". $options['field'] .") REFERENCES $table("; 
+			  	
 			if(isset($options['remote_key'])){
 				$qr .= $options['remote_key'] . ")"; 
 			}else{
