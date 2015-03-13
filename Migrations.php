@@ -6,6 +6,8 @@
 		protected $db_user;
 		protected $db_password;
 		protected $db_database;
+
+		public $versions_dir; 
 		public $output = "";
 		public $resultset = array();
 		var $connection; 
@@ -17,6 +19,8 @@
 			$this->db_user = $conf->user;
 			$this->db_password = $conf->pass;
 			$this->db_database = $conf->db;
+
+			$this->versions_dir = $conf->versions_dir; 
 				
 			$this->connection  = $this->connect($this->db_host, $this->db_user, $this->db_password, $this->db_database);
 		
@@ -44,7 +48,7 @@
 		* @return {bool}
  		*/ 
 		public function generate($name){
-			$file_path = "versions/" . time() . "_" . $name . ".php" ;
+			$file_path = $this->versions_dir . time() . "_" . $name . ".php" ;
 			$migrate = fopen($file_path , 'w') or die("Cannot generate the migration check file permissions.");
 			$name = $this->camelize($name);
 // @TODO fix this.
@@ -316,8 +320,8 @@ $content = "<?php
 				)
 			);
 
-			if(!file_exists('./versions')){
-				mkdir('./versions', 0777, true);
+			if(!file_exists($this->versions_dir)){
+				mkdir($this->versions_dir, 0777, true);
 			}
 		}
 
@@ -332,7 +336,7 @@ $content = "<?php
 			$this->check_installation();
 			$this->output .= "\nStarting migration...\n"; 
 			$migration_successful = true; 
-			foreach(glob('./versions/*.php') as $filename){
+			foreach(glob($this->versions_dir . '*.php') as $filename){
 			    require_once($filename);
 			    $klass = $this->get_class_name($filename); 
 			    $version = $this->get_version_number($filename);
@@ -384,7 +388,7 @@ $content = "<?php
 		* @return {bool} 
 		*/
 		public function runsql($filename){
-			$this->SplitSQL('versions/' . $filename);
+			$this->SplitSQL($this->versions_dir . $filename);
 			$this->resultset[] = true; 
 		}
 
@@ -580,7 +584,7 @@ $content = "<?php
 		*/
 		public function get_by_id($id){
 			if(strlen(strval($id)) == 10){
-				foreach (glob('./versions/*.php') as $filename) {
+				foreach (glob($this->versions_dir . '*.php') as $filename) {
 					if(strpos($filename, $id) !== false){
 						return $filename; 
 					}
